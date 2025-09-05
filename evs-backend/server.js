@@ -18,12 +18,8 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // --- Database Connection Pool Setup ---
-// IMPORTANT: You must replace the placeholder values below with your actual
-// PostgreSQL database credentials. It's highly recommended to use environment
-// variables for production.
-// Change this
-// To this
-const { Pool } = require('pg');
+// The connectionString is read from the DATABASE_URL environment variable on Render.
+// The ssl option is required to connect to the PostgreSQL database on Render.
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -41,24 +37,21 @@ pool.connect()
         process.exit(1); // Exit the process if the database connection fails
     });
 
-// --- API Endpoints ---
-
+// --- User Registration Endpoint ---
 /**
- * POST /register
- * Handles new user registration. It inserts the user's nationalId and a
- * hashed password into the 'users' table.
+ * Handles user registration. It hashes the user's password and stores the national ID
+ * and hashed password in the 'users' table.
  */
 app.post('/register', async (req, res) => {
     const { nationalId, password } = req.body;
 
-    // Basic validation: check if nationalId and password are provided
+    // Basic validation
     if (!nationalId || !password) {
         return res.status(400).json({ success: false, message: 'National ID and password are required.' });
     }
 
     try {
-        // Assume the database has a 'users' table with 'national_id' and 'password_hash' columns.
-        // Check if a user with the given nationalId already exists.
+        // Check if user already exists
         const userCheckQuery = 'SELECT national_id FROM users WHERE national_id = $1';
         const userCheckResult = await pool.query(userCheckQuery, [nationalId]);
 
@@ -66,24 +59,24 @@ app.post('/register', async (req, res) => {
             return res.status(409).json({ success: false, message: 'National ID already registered.' });
         }
 
-        // Hash the password for security before storing it in the database.
-        const hashedPassword = await bcrypt.hash(password, 10);
+        // Hash the password
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // Insert the new user into the 'users' table.
+        // Insert new user into the database
         const insertUserQuery = 'INSERT INTO users (national_id, password_hash) VALUES ($1, $2)';
         await pool.query(insertUserQuery, [nationalId, hashedPassword]);
 
-        res.status(201).json({ success: true, message: 'Registration successful!' });
+        res.status(201).json({ success: true, message: 'Registration successful. You can now log in.' });
     } catch (error) {
         console.error('Error during registration:', error);
-        res.status(500).json({ success: false, message: 'An error occurred during registration.' });
+        res.status(500).json({ success: false, message: 'An unexpected error occurred during registration.' });
     }
 });
 
+// --- User Login Endpoint ---
 /**
- * POST /login
- * Handles user login. It queries the database for the user and compares the
- * provided password with the stored hash.
+ * Handles user login. It compares the provided password with the stored hashed password.
  */
 app.post('/login', async (req, res) => {
     const { nationalId, password } = req.body;
@@ -93,32 +86,39 @@ app.post('/login', async (req, res) => {
     }
 
     try {
-        // Assume the database has a 'users' table with 'national_id' and 'password_hash' columns.
-        // Retrieve the user from the database.
+        // Find the user by national ID
         const userQuery = 'SELECT national_id, password_hash FROM users WHERE national_id = $1';
-        const userResult = await pool.query(userQuery, [nationalId]);
-        const user = userResult.rows[0];
+        const result = await pool.query(userQuery, [nationalId]);
 
-        if (!user) {
+        if (result.rows.length === 0) {
             return res.status(401).json({ success: false, message: 'Invalid National ID or password.' });
         }
 
-        // Compare the provided password with the stored hashed password.
-        const passwordMatch = await bcrypt.compare(password, user.password_hash);
+        const user = result.rows[0];
+        // Compare the provided password with the hashed password in the database
+        const isMatch = await bcrypt.compare(password, user.password_hash);
 
-        if (passwordMatch) {
+        if (isMatch) {
+            // Check if the user has already voted
+            const voteCheckQuery = 'SELECT user_id FROM votes WHERE user_id = $1';
+            const voteCheckResult = await pool.query(voteCheckQuery, [nationalId]);
+            
+            if (voteCheckResult.rows.length > 0) {
+                return res.status(403).json({ success: false, message: 'You have already voted.' });
+            }
+
             res.status(200).json({ success: true, message: 'Login successful!', userId: user.national_id });
         } else {
             res.status(401).json({ success: false, message: 'Invalid National ID or password.' });
         }
     } catch (error) {
         console.error('Error during login:', error);
-        res.status(500).json({ success: false, message: 'An error occurred during login.' });
+        res.status(500).json({ success: false, message: 'An unexpected error occurred during login.' });
     }
 });
 
+// --- Vote Submission Endpoint ---
 /**
- * POST /vote
  * Handles vote submission. It checks if the user has already voted and
  * inserts a new vote record into the 'votes' table.
  */
@@ -146,11 +146,12 @@ app.post('/vote', async (req, res) => {
         res.status(200).json({ success: true, message: `Vote for ${candidate} submitted successfully!` });
     } catch (error) {
         console.error('Error submitting vote:', error);
-        res.status(500).json({ success: false, message: 'An error occurred while submitting your vote.' });
+        res.status(500).json({ success: false, message: 'An unexpected error occurred while submitting the vote.' });
     }
 });
 
-// --- Start the Server ---
+
+// Start the server
 app.listen(PORT, () => {
     console.log(`Node.js backend running on http://localhost:${PORT}`);
 });
