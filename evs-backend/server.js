@@ -23,6 +23,7 @@ app.use(bodyParser.json());
 // variables for production.
 // Change this
 // To this
+const { Pool } = require('pg');
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
