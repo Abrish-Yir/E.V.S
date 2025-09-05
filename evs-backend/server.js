@@ -181,3 +181,24 @@ async function createTables() {
 
 // Call the function to create tables when the server starts
 createTables();
+
+// --- Get Voting Results Endpoint ---
+/**
+ * Handles requests for voting results. It queries the 'votes' table,
+ * groups votes by candidate, and returns a count for each.
+ */
+app.get('/results', async (req, res) => {
+    try {
+        const resultsQuery = `
+            SELECT candidate_name, COUNT(*) AS vote_count
+            FROM votes
+            GROUP BY candidate_name
+            ORDER BY vote_count DESC;
+        `;
+        const result = await pool.query(resultsQuery);
+        res.status(200).json({ success: true, results: result.rows });
+    } catch (error) {
+        console.error('Error fetching results:', error);
+        res.status(500).json({ success: false, message: 'An unexpected error occurred while fetching results.' });
+    }
+});
