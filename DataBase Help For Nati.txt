@@ -1,0 +1,61 @@
+Instructions for your friend (and you!):
+
+Save this code: Save the code above as server.js in a new, empty folder (or replace your old server.js if you're comfortable).
+
+Initialize Node.js Project:
+
+Open your terminal/command prompt.
+
+Navigate to the folder where you saved server.js.
+
+Run: npm init -y (This creates a package.json file for your project).
+
+Install Required Libraries:
+
+In the same terminal, run: npm install express body-parser cors bcrypt mssql
+
+SQL Server Setup (Crucial):
+
+Make sure you have SQL Server Express installed on your computer.
+
+Make sure you have SQL Server Management Studio (SSMS) installed.
+
+Open SSMS, connect to your SQL Server Express instance.
+
+Create a new database (e.g., SecureVotingSystem).
+
+Run the votingsystem.sql.json script in SSMS against this new database. This will create all the tables, stored procedures (RegisterVoter, CastVote, etc.), and views.
+
+Create a dedicated SQL Login/User (e.g., VotingAppUser) and grant it permissions to your SecureVotingSystem database. This is super important for security!
+
+Configure dbConfig in server.js:
+
+Open the server.js file you just saved.
+
+Find the dbConfig section at the top.
+
+Replace the placeholder values ('VotingAppUser', 'YourStrongSQLPassword!', 'localhost', 'SecureVotingSystem') with the actual username, password, server address, and database name you set up in SQL Server.
+
+For server, if it's running locally, localhost or .\SQLEXPRESS or (localdb)\MSSQLLocalDB are common values. You can find your exact server name when you connect in SSMS.
+
+Run the Backend:
+
+In your terminal (in the server.js folder), run: node server.js
+
+You should see messages indicating that the server is running and has connected to the SQL database. If not, check your dbConfig settings and make sure SQL Server is running.
+
+Test with Frontend:
+
+In your evs_combined_login_profiles.html file, ensure the BACKEND_URL constant is set to http://localhost:3000 (or whatever PORT your server.js is listening on).
+
+Open evs_combined_login_profiles.html in your web browser. Try registering and logging in. Check your SQL Server database to see if new users are being added to the Voters table and if votes are recorded in Ballots after a user casts one.
+
+Important Notes for Your Friend:
+
+Placeholders: For registration, FirstName, LastName, DateOfBirth, Email, and Phone are currently set to placeholder values in the server.js. If your frontend will eventually collect this information, the server.js code for /register will need to be updated to use the actual data from req.body.
+
+Voting ElectionID: The /vote endpoint currently assumes ElectionID = 1. Your friend will need to create an election with ElectionID = 1 and add candidates to it in the SQL database for voting to work as expected. In a more advanced system (like your index.html), the frontend would send the ElectionID when casting a vote.
+
+More Endpoints: If your friend wants to implement other features from your index.html (like creating new elections, viewing all elections, getting results), they will need to add new API endpoints to server.js and write corresponding SQL queries or execute other stored procedures (CreateElection, GetElectionResults, etc.) from your votingsystem.sql.json schema.
+
+This server.js now has the "brain" fully connected to the "super-organized library" of your SQL database!

@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electronic Voting System</title>
+    <!-- Link to Google Fonts for 'Inter' -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Base styles for the entire page */
+        body {
+            font-family: 'Inter', sans-serif; /* Using Inter font for a modern look */
+            background: linear-gradient(to right, #2c3e50, #3498db); /* Gradient background */
+            color: white; /* Default text color */
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Full viewport height */
+            box-sizing: border-box; /* Include padding in element's total width and height */
+        }
+
+        /* Container for the main application content */
+        .container {
+            background-color: rgba(255, 255, 255, 0.1); /* Semi-transparent white background */
+            padding: 2rem;
+            border-radius: 16px; /* Rounded corners */
+            max-width: 900px; /* Maximum width for larger screens */
+            width: 100%; /* Fluid width for responsiveness */
+            margin: 0 auto; /* Center the container horizontally */
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
+        }
+
+        /* Styling for main headings */
+        h1 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 2.5rem; /* Larger heading */
+            font-weight: 700; /* Bold font */
+        }
+
+        /* Styling for sub-headings */
+        h2 {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        /* General section spacing */
+        .section {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Styling for labels */
+        label {
+            display: block; /* Make labels block-level for better spacing */
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        /* Styling for input fields */
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            color: #333; /* Dark text for inputs */
+        }
+
+        /* General button styling */
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            background-color: #1abc9c; /* Default button color */
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease; /* Smooth transitions for hover effects */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Button shadow */
+        }
+
+        button:hover {
+            background-color: #16a085; /* Darker green on hover */
+            transform: translateY(-2px); /* Slight lift on hover */
+        }
+
+        /* Specific styling for login/register buttons */
+        .login-buttons {
+            display: flex;
+            gap: 1rem; /* Space between buttons */
+            margin-top: 1rem;
+        }
+
+        .login-buttons button {
+            flex: 1; /* Make buttons take equal width */
+            margin-bottom: 0; /* Override general button margin */
+        }
+
+        .login-buttons button:first-child {
+            background-color: #3498db; /* Blue for Login button */
+        }
+
+        .login-buttons button:first-child:hover {
+            background-color: #2980b9; /* Darker blue on hover */
+        }
+
+        .login-buttons button:last-child {
+            background-color: #9b59b6; /* Purple for Register button */
+        }
+
+        .login-buttons button:last-child:hover {
+            background-color: #8e44ad; /* Darker purple on hover */
+        }
+
+        /* Footer styling */
+        .footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            opacity: 0.7; /* Slightly transparent */
+        }
+
+        /* Utility class to hide elements */
+        .hidden {
+            display: none;
+        }
+
+        /* CAPTCHA box layout */
+        .captcha-box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            background: rgba(0, 0, 0, 0.2); /* Darker background for captcha area */
+            padding: 0.75rem;
+            border-radius: 8px;
+        }
+
+        /* CAPTCHA code display */
+        .captcha-code {
+            background: #333;
+            padding: 0.75rem 1.5rem;
+            font-weight: bold;
+            font-size: 1.2rem;
+            letter-spacing: 3px; /* Spaced out letters */
+            border-radius: 8px;
+            user-select: none; /* Prevent text selection */
+            flex-shrink: 0; /* Prevent the code from shrinking */
+        }
+
+        .captcha-box input {
+            flex-grow: 1; /* Allow input to take remaining space */
+            margin-left: 1rem;
+            margin-bottom: 0; /* Remove bottom margin for input within flex container */
+        }
+
+        /* Candidate list layout (grid for responsiveness) */
+        .candidate-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Responsive columns, min 250px wide */
+            gap: 1.5rem; /* Space between cards */
+            justify-content: center; /* Center cards in the grid */
+            margin-top: 1.5rem;
+        }
+
+        /* Styling for individual candidate cards */
+        .candidate-card {
+            background: rgba(255, 255, 255, 0.15); /* Semi-transparent background */
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s ease; /* Lift effect on hover */
+        }
+
+        .candidate-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .candidate-card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%; /* Circular image */
+            object-fit: cover;
+            margin-bottom: 1rem;
+            border: 3px solid #1abc9c; /* Green border around image */
+        }
+
+        .candidate-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .candidate-card p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 1rem;
+            flex-grow: 1; /* Allows paragraph to take available vertical space */
+        }
+
+        .candidate-card button {
+            margin-top: 0.5rem;
+            background-color: #e67e22; /* Orange for Select button */
+            width: auto; /* Buttons size to content, not full width */
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9rem;
+        }
+        .candidate-card button:hover {
+            background-color: #d35400; /* Darker orange on hover */
+        }
+
+        .candidate-card button:last-of-type {
+            background-color: #7f8c8d; /* Grey for View More button */
+        }
+        .candidate-card button:last-of-type:hover {
+            background-color: #5d6d7e; /* Darker grey on hover */
+        }
+
+        /* Confirmation message after voting */
+        #confirmation {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-top: 2rem;
+            color: #2ecc71; /* Green for success */
+            font-weight: 700;
+        }
+
+        /* Message Box Styles (replaces alert()) */
+        .message-box {
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            transition: opacity 0.3s ease; /* Smooth fade in/out */
+            opacity: 1;
+        }
+
+        .message-box.success {
+            background-color: #2ecc71; /* Green for success messages */
+        }
+
+        .message-box.error {
+            background-color: #e74c3c; /* Red for error messages */
+        }
+
+        .message-box.info {
+            background-color: #3498db; /* Blue for informational messages */
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1.5rem;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+            .login-buttons {
+                flex-direction: column; /* Stack login/register buttons vertically */
+            }
+            .candidate-list {
+                grid-template-columns: 1fr; /* Stack candidate cards vertically */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main container for the application -->
+    <div class="container">
+        <h1>Electronic Voting System</h1>
+
+        <!-- Message Box for displaying feedback to the user -->
+        <div id="message-box" class="message-box hidden"></div>
+
+        <!-- Login/Registration Section -->
+        <div id="login-container">
+            <h2>Login / Register</h2>
+            <div class="section">
+                <label for="national-id">National ID</label>
+                <input type="text" id="national-id" placeholder="Enter your National ID">
+            </div>
+            <div class="section">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password">
+            </div>
+            <div class="captcha-box">
+                <span class="captcha-code" id="captcha-text"></span>
+                <input type="text" id="captcha-input" placeholder="Enter CAPTCHA">
+            </div>
+            <div class="login-buttons">
+                <button onclick="handleLogin()">Login</button>
+                <button onclick="handleRegister()">Register</button>
+            </div>
+            <!-- Display National ID after successful login -->
+            <p id="user-id-display" class="text-center text-sm mt-4 opacity-75 hidden">Your National ID: <span id="current-user-id"></span></p>
+        </div>
+
+        <!-- Voting Section (initially hidden) -->
+        <div id="voting-container" class="hidden">
+            <h2>Vote for Your Candidate</h2>
+            <div class="candidate-list">
+                <!-- Hardcoded candidate cards for simplicity. In a larger app, these might be fetched from backend. -->
+                <div class="candidate-card">
+                    <img src="https://placehold.co/100x100/2c3e50/ffffff?text=JB" alt="John Blaze">
+                    <h3>John Blaze</h3>
+                    <p>“A future built on unity and strength.”</p>
+                    <button onclick="selectCandidate('John Blaze')">Select</button>
+                    <button onclick="showMessage('John Blaze is a reform-driven leader focused on education, technology and fair justice.', 'info')">View More</button>
+                </div>
+                <div class="candidate-card">
+                    <img src="https://placehold.co/100x100/3498db/ffffff?text=JP" alt="Jane Power">
+                    <h3>Jane Power</h3>
+                    <p>“Honesty, equality, and a voice for all.”</p>
+                    <button onclick="selectCandidate('Jane Power')">Select</button>
+                    <button onclick="showMessage('Jane Power is a grassroots candidate advocating for clean energy, transparency, and social support.', 'info')">View More</button>
+                </div>
+                <div class="candidate-card">
+                    <img src="https://placehold.co/100x100/1abc9c/ffffff?text=AF" alt="Alex Future">
+                    <h3>Alex Future</h3>
+                    <p>“Innovation that serves the people.”</p>
+                    <button onclick="selectCandidate('Alex Future')">Select</button>
+                    <button onclick="showMessage('Alex Future focuses on smart infrastructure, digital freedom, and inclusive economic growth.', 'info')">View More</button>
+                </div>
+            </div>
+
+            <!-- Confirmation message after voting (initially hidden) -->
+            <div id="confirmation" class="hidden">
+                Your vote has been submitted for <span id="voted-for"></span> ✅
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            &copy; 2025 Electronic Voting Authority
+        </div>
+    </div>
+
+    <script>
+        // --- DOM Element References ---
+        // Get references to HTML elements by their IDs for easier manipulation
+        const captchaText = document.getElementById("captcha-text");
+        const nationalIdInput = document.getElementById("national-id"); // Input field for National ID
+        const passwordInput = document.getElementById("password");
+        const captchaInput = document.getElementById("captcha-input");
+        const loginContainer = document.getElementById("login-container"); // The login/register section
+        const votingContainer = document.getElementById("voting-container"); // The voting section
+        const votedForSpan = document.getElementById("voted-for"); // Span to show voted candidate
+        const confirmationDiv = document.getElementById("confirmation"); // Vote confirmation message div
+        const messageBox = document.getElementById("message-box"); // Custom message box div
+        const userIdDisplay = document.getElementById("user-id-display"); // Div to display logged-in user ID
+        const currentUserIdSpan = document.getElementById("current-user-id"); // Span to show the actual user ID
+
+        // --- Backend URL Configuration ---
+        // IMPORTANT: Ensure this URL matches the port your Node.js backend is running on.
+        // If your backend is running locally on port 3001, this should be 'http://localhost:3001'.
+        const BACKEND_URL = 'http://localhost:3001';
+
+        // --- Global State Variables ---
+        let currentCaptcha = ''; // Stores the currently displayed CAPTCHA string
+        let loggedInUserId = ''; // Stores the National ID of the successfully logged-in user
+
+        // --- Custom Message Box Function ---
+        /**
+         * Displays a custom message to the user in a styled box.
+         * @param {string} msg - The message text to display.
+         * @param {'success' | 'error' | 'info'} type - The type of message (for styling).
+         */
+        function showMessage(msg, type) {
+            messageBox.textContent = msg; // Set the message text
+            messageBox.className = `message-box ${type}`; // Apply base and type-specific classes
+            messageBox.classList.remove('hidden'); // Make the message box visible
+
+            // Hide the message after 3 seconds
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 3000);
+        }
+
+        // --- CAPTCHA Generation Function ---
+        /**
+         * Generates a random 6-character CAPTCHA string and displays it.
+         */
+        function generateCaptcha() {
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Characters allowed in CAPTCHA
+            let captcha = "";
+            for (let i = 0; i < 6; i++) {
+                captcha += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            captchaText.innerText = captcha; // Update the CAPTCHA text in the HTML
+            currentCaptcha = captcha; // Store the generated CAPTCHA for validation
+        }
+
+        // --- Initialize CAPTCHA on Page Load ---
+        // This ensures a CAPTCHA is ready when the user first opens the page.
+        window.onload = generateCaptcha;
+
+        // --- Handle User Login ---
+        /**
+         * Handles the login process by sending national ID and password to the backend.
+         */
+        async function handleLogin() {
+            const nationalId = nationalIdInput.value.trim(); // Get National ID from input
+            const password = passwordInput.value.trim();
+            const captcha = captchaInput.value.trim();
+
+            // Validate all fields are filled
+            if (!nationalId || !password || !captcha) {
+                showMessage("Please fill in all fields.", "error");
+                return;
+            }
+
+            // Validate CAPTCHA
+            if (captcha !== currentCaptcha) {
+                showMessage("Incorrect CAPTCHA. Please try again.", "error");
+                generateCaptcha(); // Generate a new CAPTCHA on failure
+                return;
+            }
+
+            try {
+                // Send a POST request to the backend's /login endpoint
+                const response = await fetch(`${BACKEND_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ nationalId, password }), // Send nationalId and password
+                });
+
+                const data = await response.json(); // Parse the JSON response from the backend
+
+                // Check if the HTTP response status is OK (200-299) AND backend reported success
+                if (response.ok && data.success) {
+                    showMessage(data.message, "success"); // Show success message
+                    loggedInUserId = data.userId; // Store the National ID returned by the backend
+                    currentUserIdSpan.textContent = loggedInUserId; // Display the National ID
+                    userIdDisplay.classList.remove('hidden'); // Make the user ID display visible
+                    loginContainer.classList.add("hidden"); // Hide the login section
+                    votingContainer.classList.remove("hidden"); // Show the voting section
+                } else {
+                    // Handle errors reported by the backend (e.g., invalid credentials)
+                    showMessage(data.message || "Login failed. Please try again.", "error");
+                    generateCaptcha(); // Generate new CAPTCHA on login failure
+                }
+            } catch (error) {
+                // Handle network errors or issues with the backend connection
+                console.error("Error during login:", error);
+                showMessage("An error occurred during login. Please ensure the Node.js backend is running.", "error");
+                generateCaptcha(); // Generate new CAPTCHA on error
+            }
+        }
+
+        // --- Handle User Registration ---
+        /**
+         * Handles the registration process by sending national ID and password to the backend.
+         */
+        async function handleRegister() {
+            const nationalId = nationalIdInput.value.trim(); // Get National ID from input
+            const password = passwordInput.value.trim();
+            const captcha = captchaInput.value.trim();
+
+            // Validate all fields are filled
+            if (!nationalId || !password || !captcha) {
+                showMessage("Please fill in all fields.", "error");
+                return;
+            }
+
+            // Validate CAPTCHA
+            if (captcha !== currentCaptcha) {
+                showMessage("Incorrect CAPTCHA. Please try again.", "error");
+                generateCaptcha();
+                return;
+            }
+
+            try {
+                // Send a POST request to the backend's /register endpoint
+                const response = await fetch(`${BACKEND_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ nationalId, password }), // Send nationalId and password
+                });
+
+                const data = await response.json(); // Parse the JSON response
+
+                // Check if the HTTP response status is OK (200-299) AND backend reported success
+                if (response.ok && data.success) {
+                    showMessage(data.message, "success"); // Show success message
+                    // Clear input fields after successful registration for a clean slate
+                    nationalIdInput.value = '';
+                    passwordInput.value = '';
+                    captchaInput.value = '';
+                    generateCaptcha(); // Generate a new CAPTCHA
+                } else {
+                    // Handle errors reported by the backend (e.g., National ID already registered)
+                    showMessage(data.message || "Registration failed. Please try again.", "error");
+                    generateCaptcha();
+                }
+            } catch (error) {
+                // Handle network errors or issues with the backend connection
+                console.error("Error during registration:", error);
+                showMessage("An error occurred during registration. Please ensure the Node.js backend is running.", "error");
+                generateCaptcha();
+            }
+        }
+
+        // --- Handle Candidate Selection (Voting) ---
+        /**
+         * Handles the vote submission process.
+         * @param {string} candidateName - The name of the candidate being voted for.
+         */
+        async function selectCandidate(candidateName) {
+            // Ensure a user is logged in before allowing a vote
+            if (!loggedInUserId) {
+                showMessage("You must be logged in to vote.", "error");
+                return;
+            }
+
+            try {
+                // Send a POST request to the backend's /vote endpoint
+                const response = await fetch(`${BACKEND_URL}/vote`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ userId: loggedInUserId, candidate: candidateName }), // Send user's National ID and candidate name
+                });
+
+                const data = await response.json(); // Parse the JSON response
+
+                // Check if the HTTP response status is OK (200-299) AND backend reported success
+                if (response.ok && data.success) {
+                    votedForSpan.textContent = candidateName; // Update the confirmation message
+                    confirmationDiv.classList.remove("hidden"); // Show the confirmation message
+                    showMessage(`Vote submitted successfully for ${candidateName}!`, "success"); // Show success message
+                } else {
+                    showMessage(data.message || "Failed to submit vote.", "error");
+                }
+            } catch (error) {
+                // Handle network errors or issues with the backend connection
+                console.error("Error submitting vote:", error);
+                showMessage("An error occurred while submitting your vote. Please ensure the Node.js backend is running.", "error");
+            }
+        }
+    </script>
+
+</body>
+</html>

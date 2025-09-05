@@ -1,0 +1,24 @@
+--------------------------------------------------------------------------------------
+                             ### HOW TO START THE SITE ###
+--------------------------------------------------------------------------------------
+## The Backend Of This Site Is Made With Javascript But JavaScript Can't Run On A Server
+So We Used Node.JS To Run Javascript To Start The Server Carefully Follow The Steps Below 
+
+                ---->>>  1. We Need To Install Dependencies  <<<----
+The List Of Dep. Are In The Server.Js File -- To Automatically Install This Dependencies 
+We Need NODE.JS Then In The EVS-Backend File Right Click In An Empty Space Then Click Open 
+In The Terminal Then Follow This Steps 
+--------------------------------------------------------------------------------------                          
+                             1. npm init -y
+                             2. npm install express cors
+--------------------------------------------------------------------------------------
+
+                  ---->>>  2. Starting The Backend Server  <<<----
+To Start The Backend Server Will Use A Node.JS Command This Command Will Start The Backend 
+And #If Someone Trys To Use The Frontend Without Starting The Backend The Site Won't Work#
+
+                          ---->> node server.js <<------
+-------------------------------------------------------------------------------------
+
+              
+ 
