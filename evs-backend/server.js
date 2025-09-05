@@ -155,3 +155,29 @@ app.post('/vote', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Node.js backend running on http://localhost:${PORT}`);
 });
+// Function to create tables if they don't exist
+async function createTables() {
+    const createUsersTable = `
+        CREATE TABLE IF NOT EXISTS users (
+            national_id VARCHAR(255) PRIMARY KEY,
+            password_hash VARCHAR(255) NOT NULL
+        );
+    `;
+    const createVotesTable = `
+        CREATE TABLE IF NOT EXISTS votes (
+            user_id VARCHAR(255) PRIMARY KEY,
+            candidate_name VARCHAR(255) NOT NULL,
+            voted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+    `;
+    try {
+        await pool.query(createUsersTable);
+        await pool.query(createVotesTable);
+        console.log('Tables created successfully or already exist!');
+    } catch (err) {
+        console.error('Error creating tables:', err);
+    }
+}
+
+// Call the function to create tables when the server starts
+createTables();
